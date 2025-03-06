@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Shooting Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+   <div class="game-container">
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- UI Buttons (Centered) -->
+        <div class="ui">
+            <button id="startButton">Start Game</button>
+            <button id="retryButton">Retry</button>
+            <div class="score-container">
+                <span id="score">Score: 0</span>
+                <div id="healthBarContainer">
+                    <div id="healthBar"></div>
+                </div>
+            </div>
+        </div>
+        <button id="instructionsButton">Game Instructions</button>
+<div class="instructions" id="instructions">
+    <h2>Game Instructions</h2>
+    <ul>
+        <li><section>On Windows:</section>
+            <ul>
+                <li>➡️ Use <strong>Arrow Keys</strong> to move.</li>
+                <li>⚔️ Press <strong>'F' Key</strong> to attack.</li>
+            </ul>
+        </li>
+        <li><section>On Mobile:</section>
+            <ul>
+                <li>👉 <strong>Touch</strong> the screen to move and attack.</li>
+            </ul>
+        </li>
+    </ul>
+    <p>Good luck, adventurer! 🌟</p>
+</div>
+
+
+        <!-- 🎵 Mute Button (Fixed Position) -->
+        <div class="ismute">
+            <button id="muteButton">Mute</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
