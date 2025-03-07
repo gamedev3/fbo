@@ -94,96 +94,86 @@ retryButton.addEventListener("click", () => {
     document.location.reload();
 });
 
-// Keyboard Controls
-window.addEventListener("keydown", (e) => { keys[e.key] = true; });
-window.addEventListener("keyup", (e) => { keys[e.key] = false; });
+// Player properties
+let player = { x: 100, y: 100, speed: 5 };
+let shooting = false;
+let keys = {};
 
-function updateControls() {
-    if (keys["ArrowLeft"] && car.x > 0) car.x -= car.speed;
-    if (keys["ArrowRight"] && car.x < canvas.width - car.width) car.x += car.speed;
-    if (keys["ArrowUp"] && car.y > 0) car.y -= car.speed;
-    if (keys["ArrowDown"] && car.y < canvas.height - car.height) car.y += car.speed;
-    if (keys["f"]) shoot();
-}
-
-let bullets = []; // Store active bullets
-let touchStartX = 0, touchStartY = 0;
-let touchX = 0, touchY = 0;
-let speedFactor = 2.0;
-
-// Prevent scrolling issues
-document.body.style.overflow = "hidden";
-document.documentElement.style.overscrollBehavior = "none";
-
-// Track touch start position
-canvas.addEventListener("touchstart", (e) => {
-    let touch = e.touches[0];
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
-    touchX = touch.clientX;
-    touchY = touch.clientY;
+// **Keyboard Controls (Desktop)**
+document.addEventListener("keydown", (e) => {
+    keys[e.key] = true;
 });
 
-// Track movement (for car control)
-canvas.addEventListener("touchmove", (e) => {
+document.addEventListener("keyup", (e) => {
+    keys[e.key] = false;
+});
+
+// **Mouse Shooting (Desktop)**
+document.addEventListener("mousedown", () => { shooting = true; });
+document.addEventListener("mouseup", () => { shooting = false; });
+
+// **Touch Controls (Mobile)**
+document.addEventListener("touchstart", (e) => {
+    e.preventDefault(); // Prevent scrolling
+    shooting = true;
+});
+document.addEventListener("touchend", () => { shooting = false; });
+
+// **Mobile Joystick Controls (Basic)**
+let touchX = null, touchY = null;
+document.addEventListener("touchmove", (e) => {
     e.preventDefault();
     let touch = e.touches[0];
+    if (touchX === null) touchX = touch.clientX;
+    if (touchY === null) touchY = touch.clientY;
 
     let dx = touch.clientX - touchX;
     let dy = touch.clientY - touchY;
 
-    car.x += dx * speedFactor;
-    car.y += dy * speedFactor;
-
-    car.x = Math.max(0, Math.min(canvas.width - car.width, car.x));
-    car.y = Math.max(0, Math.min(canvas.height - car.height, car.y));
-
-    touchX = touch.clientX;
-    touchY = touch.clientY;
-});
-
-// **Shoot when tapping the screen**
-canvas.addEventListener("touchend", (e) => {
-    let bullet = {
-        x: car.x + car.width / 2 - 5, // Center bullet
-        y: car.y,
-        width: 10,
-        height: 20,
-        speed: -10 // Move upwards
-    };
-    bullets.push(bullet);
-});
-
-// **Update and draw bullets**
-function updateBullets() {
-    for (let i = bullets.length - 1; i >= 0; i--) {
-        bullets[i].y += bullets[i].speed;
-        if (bullets[i].y < 0) {
-            bullets.splice(i, 1); // Remove bullets off-screen
-        }
+    if (dx > 20) keys["ArrowRight"] = true;
+    else if (dx < -20) keys["ArrowLeft"] = true;
+    else {
+        keys["ArrowRight"] = false;
+        keys["ArrowLeft"] = false;
     }
+
+    if (dy > 20) keys["ArrowDown"] = true;
+    else if (dy < -20) keys["ArrowUp"] = true;
+    else {
+        keys["ArrowDown"] = false;
+        keys["ArrowUp"] = false;
+    }
+});
+
+document.addEventListener("touchend", () => {
+    keys = {}; // Reset movement on touch release
+    touchX = touchY = null;
+});
+
+// **Game Update Function**
+function update() {
+    if (keys["ArrowUp"] || keys["w"]) player.y -= player.speed;
+    if (keys["ArrowDown"] || keys["s"]) player.y += player.speed;
+    if (keys["ArrowLeft"] || keys["a"]) player.x -= player.speed;
+    if (keys["ArrowRight"] || keys["d"]) player.x += player.speed;
+
+    if (shooting) {
+        console.log("Shooting!"); // Replace with actual shooting function
+    }
+
+    draw();
+    requestAnimationFrame(update);
 }
 
-// **Draw bullets**
-function drawBullets(ctx) {
-    ctx.fillStyle = "yellow";
-    bullets.forEach(bullet => {
-        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-    });
-}
-
-// **Game Loop**
-function gameLoop() {
+// **Draw Player**
+function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    updateBullets();
-    drawBullets(ctx);
-
-    requestAnimationFrame(gameLoop);
+    ctx.fillStyle = "blue";
+    ctx.fillRect(player.x, player.y, 20, 20);
 }
 
-gameLoop();
-
+// Start Game Loop
+update();
 // Shooting
 function shoot() {
     bullets.push({ x: car.x + 20, y: car.y, width: 5, height: 10, speed: 7 });
