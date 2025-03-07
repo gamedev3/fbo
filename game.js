@@ -106,39 +106,48 @@ function updateControls() {
     if (keys["f"]) shoot();
 }
 
-// Smooth Mobile Touch Controls
-let touchX = null, touchY = null;
-let velocityX = 0, velocityY = 0;
+let touchStartX = 0, touchStartY = 0;
+let touchX = 0, touchY = 0;
+let speedFactor = 2.0; // Adjust sensitivity for faster response
 
+// Prevent scrolling while playing
+document.body.style.overflow = "hidden";
+document.documentElement.style.overscrollBehavior = "none";
+
+// Track touch start position
 canvas.addEventListener("touchstart", (e) => {
     let touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
     touchX = touch.clientX;
     touchY = touch.clientY;
 });
 
+// Track touch movement
 canvas.addEventListener("touchmove", (e) => {
+    e.preventDefault(); // Prevent page scrolling
+
     let touch = e.touches[0];
     let dx = touch.clientX - touchX;
     let dy = touch.clientY - touchY;
 
-    velocityX = dx * 0.2; // Smooth movement factor
-    velocityY = dy * 0.2;
+    // Smooth car movement with acceleration
+    car.x += dx * speedFactor;
+    car.y += dy * speedFactor;
 
+    // Prevent car from going out of bounds
+    car.x = Math.max(0, Math.min(canvas.width - car.width, car.x));
+    car.y = Math.max(0, Math.min(canvas.height - car.height, car.y));
+
+    // Update last touch position
     touchX = touch.clientX;
     touchY = touch.clientY;
 });
 
-function smoothTouchMovement() {
-    car.x = Math.max(0, Math.min(canvas.width - car.width, car.x + velocityX));
-    car.y = Math.max(0, Math.min(canvas.height - car.height, car.y + velocityY));
-
-    // Gradually slow down movement
-    velocityX *= 0.9;
-    velocityY *= 0.9;
-
-    requestAnimationFrame(smoothTouchMovement);
-}
-smoothTouchMovement();
+// Handle touch end (optional)
+canvas.addEventListener("touchend", () => {
+    // Can add logic to slow down car gradually if needed
+});
 
 // Shooting
 function shoot() {
