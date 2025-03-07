@@ -94,86 +94,50 @@ retryButton.addEventListener("click", () => {
     document.location.reload();
 });
 
-// Player properties
-let player = { x: 100, y: 100, speed: 5 };
-let shooting = false;
-let keys = {};
+// Keyboard Controls
+window.addEventListener("keydown", (e) => { keys[e.key] = true; });
+window.addEventListener("keyup", (e) => { keys[e.key] = false; });
 
-// **Keyboard Controls (Desktop)**
-document.addEventListener("keydown", (e) => {
-    keys[e.key] = true;
-});
+function updateControls() {
+    if (keys["ArrowLeft"] && car.x > 0) car.x -= car.speed;
+    if (keys["ArrowRight"] && car.x < canvas.width - car.width) car.x += car.speed;
+    if (keys["ArrowUp"] && car.y > 0) car.y -= car.speed;
+    if (keys["ArrowDown"] && car.y < canvas.height - car.height) car.y += car.speed;
+    if (keys["f"]) shoot();
+}
 
-document.addEventListener("keyup", (e) => {
-    keys[e.key] = false;
-});
+// **Mobile Touch Controls**
+let touchStartX = null, touchStartY = null;
+let touchThreshold = 20; // Minimum movement to trigger action
 
-// **Mouse Shooting (Desktop)**
-document.addEventListener("mousedown", () => { shooting = true; });
-document.addEventListener("mouseup", () => { shooting = false; });
-
-// **Touch Controls (Mobile)**
 document.addEventListener("touchstart", (e) => {
     e.preventDefault(); // Prevent scrolling
-    shooting = true;
-});
-document.addEventListener("touchend", () => { shooting = false; });
 
-// **Mobile Joystick Controls (Basic)**
-let touchX = null, touchY = null;
+    let touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    shooting = true; // Tap to shoot
+});
+
 document.addEventListener("touchmove", (e) => {
     e.preventDefault();
+
     let touch = e.touches[0];
-    if (touchX === null) touchX = touch.clientX;
-    if (touchY === null) touchY = touch.clientY;
+    let dx = touch.clientX - touchStartX;
+    let dy = touch.clientY - touchStartY;
 
-    let dx = touch.clientX - touchX;
-    let dy = touch.clientY - touchY;
-
-    if (dx > 20) keys["ArrowRight"] = true;
-    else if (dx < -20) keys["ArrowLeft"] = true;
-    else {
-        keys["ArrowRight"] = false;
-        keys["ArrowLeft"] = false;
-    }
-
-    if (dy > 20) keys["ArrowDown"] = true;
-    else if (dy < -20) keys["ArrowUp"] = true;
-    else {
-        keys["ArrowDown"] = false;
-        keys["ArrowUp"] = false;
-    }
+    // Detect movement direction
+    keys["ArrowRight"] = dx > touchThreshold;
+    keys["ArrowLeft"] = dx < -touchThreshold;
+    keys["ArrowDown"] = dy > touchThreshold;
+    keys["ArrowUp"] = dy < -touchThreshold;
 });
 
 document.addEventListener("touchend", () => {
-    keys = {}; // Reset movement on touch release
-    touchX = touchY = null;
+    keys = {}; // Stop movement when touch is released
+    shooting = false; // Stop shooting
 });
 
-// **Game Update Function**
-function update() {
-    if (keys["ArrowUp"] || keys["w"]) player.y -= player.speed;
-    if (keys["ArrowDown"] || keys["s"]) player.y += player.speed;
-    if (keys["ArrowLeft"] || keys["a"]) player.x -= player.speed;
-    if (keys["ArrowRight"] || keys["d"]) player.x += player.speed;
-
-    if (shooting) {
-        console.log("Shooting!"); // Replace with actual shooting function
-    }
-
-    draw();
-    requestAnimationFrame(update);
-}
-
-// **Draw Player**
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "blue";
-    ctx.fillRect(player.x, player.y, 20, 20);
-}
-
-// Start Game Loop
-update();
 // Shooting
 function shoot() {
     bullets.push({ x: car.x + 20, y: car.y, width: 5, height: 10, speed: 7 });
