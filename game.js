@@ -106,11 +106,12 @@ function updateControls() {
     if (keys["f"]) shoot();
 }
 
+let bullets = []; // Store active bullets
 let touchStartX = 0, touchStartY = 0;
 let touchX = 0, touchY = 0;
-let speedFactor = 2.0; // Adjust sensitivity for faster response
+let speedFactor = 2.0;
 
-// Prevent scrolling while playing
+// Prevent scrolling issues
 document.body.style.overflow = "hidden";
 document.documentElement.style.overscrollBehavior = "none";
 
@@ -123,31 +124,65 @@ canvas.addEventListener("touchstart", (e) => {
     touchY = touch.clientY;
 });
 
-// Track touch movement
+// Track movement (for car control)
 canvas.addEventListener("touchmove", (e) => {
-    e.preventDefault(); // Prevent page scrolling
-
+    e.preventDefault();
     let touch = e.touches[0];
+
     let dx = touch.clientX - touchX;
     let dy = touch.clientY - touchY;
 
-    // Smooth car movement with acceleration
     car.x += dx * speedFactor;
     car.y += dy * speedFactor;
 
-    // Prevent car from going out of bounds
     car.x = Math.max(0, Math.min(canvas.width - car.width, car.x));
     car.y = Math.max(0, Math.min(canvas.height - car.height, car.y));
 
-    // Update last touch position
     touchX = touch.clientX;
     touchY = touch.clientY;
 });
 
-// Handle touch end (optional)
-canvas.addEventListener("touchend", () => {
-    // Can add logic to slow down car gradually if needed
+// **Shoot when tapping the screen**
+canvas.addEventListener("touchend", (e) => {
+    let bullet = {
+        x: car.x + car.width / 2 - 5, // Center bullet
+        y: car.y,
+        width: 10,
+        height: 20,
+        speed: -10 // Move upwards
+    };
+    bullets.push(bullet);
 });
+
+// **Update and draw bullets**
+function updateBullets() {
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        bullets[i].y += bullets[i].speed;
+        if (bullets[i].y < 0) {
+            bullets.splice(i, 1); // Remove bullets off-screen
+        }
+    }
+}
+
+// **Draw bullets**
+function drawBullets(ctx) {
+    ctx.fillStyle = "yellow";
+    bullets.forEach(bullet => {
+        ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+    });
+}
+
+// **Game Loop**
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    updateBullets();
+    drawBullets(ctx);
+
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
 
 // Shooting
 function shoot() {
